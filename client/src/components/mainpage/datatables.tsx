@@ -57,12 +57,8 @@ export const DataTables = () => {
               <TableRow>
                 <TableHead className="font-bold text-center">Part#</TableHead>
                 <TableHead className="font-bold text-center">P.O.</TableHead>
-                <TableHead className="font-bold text-center">
-                  Quantity
-                </TableHead>
-                <TableHead className="font-bold text-center">
-                  Sum of Part#
-                </TableHead>
+                <TableHead className="font-bold text-center">Quantity</TableHead>
+                <TableHead className="font-bold text-center">Sum of Part#</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

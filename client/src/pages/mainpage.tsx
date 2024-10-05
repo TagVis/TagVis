@@ -1,7 +1,7 @@
-import { Navbar } from '@/components/navbar/navbar';
-import { Camera } from '@/components/mainpage/camera';
-import { DataTables } from '@/components/mainpage/datatables';
-import { DataInDataTables } from '@/components/mainpage/dataindatatables';
+import { Navbar } from "@/components/navbar/navbar";
+import { Camera } from "@/components/mainpage/camera";
+import { DataTables } from "@/components/mainpage/datatables";
+import { DataInDataTables } from "@/components/mainpage/dataindatatables";
 
 export const MainPage = () => {
   return (
