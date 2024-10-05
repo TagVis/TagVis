@@ -2,7 +2,7 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 
 const spinnerVariants =
-  "w-16 h-16 border-4 border-t-4 border-purple-500 border-t-purple-800 rounded-full animate-spin";
+  "w-16 h-16 border-4 border-t-4 border-black border-t-black rounded-full animate-spin";
 
 interface LoadingSpinnerProps extends React.HTMLAttributes<HTMLDivElement> {
   className?: string;

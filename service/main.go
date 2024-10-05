@@ -54,7 +54,7 @@ func main() {
     app.Get("/GetTags", tagHandler.GetTags) // Endpoint for test
     app.Get("/GetTagByTagId/:TagID", tagHandler.GetTagByTagId) // Endpoint for test
 
-	app.Get("/GetTagTableData", tagHandler.GetTags) // Endpoint for project
+	app.Get("/GetTagTableData", tagHandler.GetTagTableData) // Endpoint for project
     app.Post("/PostAddTag", tagHandler.PostAddTag) // Endpoint for project
 
     //#####################################################################################

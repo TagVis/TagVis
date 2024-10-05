@@ -28,7 +28,7 @@ func (h *tagHandler) GetTags(c *fiber.Ctx) error {
 			TagID:   tag.TagID,
 			PartNO:  tag.PartNO,
 			PO:      tag.PO,
-			Quntity: tag.Quntity,
+			Quantity: tag.Quantity,
 		})
 	}
 	return c.JSON(tagsResponse)
@@ -46,7 +46,7 @@ func (h *tagHandler) GetTagByTagId(c *fiber.Ctx) error {
 		TagID:   tag.TagID,
 		PartNO:  tag.PartNO,
 		PO:      tag.PO,
-		Quntity: tag.Quntity,
+		Quantity: tag.Quantity,
 	}
 
 	return c.JSON(tagResponse)
@@ -55,7 +55,7 @@ func (h *tagHandler) GetTagByTagId(c *fiber.Ctx) error {
 func (h *tagHandler) GetTagTableData(c *fiber.Ctx) error {
 	tagsResponse := make([]dtos.TagTableDataDataResponse, 0)
 
-	tags, err := h.tagSer.GetTags()
+	tags, err := h.tagSer.GetTagTableData()
 	if err != nil {
 		return err
 	}
@@ -65,7 +65,7 @@ func (h *tagHandler) GetTagTableData(c *fiber.Ctx) error {
 			TagID:   tag.TagID,
 			PartNO:  tag.PartNO,
 			PO:      tag.PO,
-			Quntity: tag.Quntity,
+			Quantity: tag.Quantity,
 		})
 	}
 	return c.JSON(tagsResponse)
@@ -86,7 +86,7 @@ func (h *tagHandler) PostAddTag(c *fiber.Ctx) error {
 	tagResponse := dtos.AddTagRequest{
 		PartNO:  tag.PartNO,
 		PO:      tag.PO,
-		Quntity: tag.Quntity,
+		Quantity: tag.Quantity,
 	}
 
 	return c.JSON(tagResponse)

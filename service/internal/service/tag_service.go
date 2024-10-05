@@ -30,7 +30,7 @@ func (s tagService) GetTags() ([]entities.Tag, error) {
 			TagID:   tag.TagID,
 			PartNO:  tag.PartNO,
 			PO:      tag.PO,
-			Quntity: tag.Quntity,
+			Quantity: tag.Quantity,
 		}
 		tagResponses = append(tagResponses, tagResponse)
 	}
@@ -52,25 +52,25 @@ func (s tagService) GetTagByTagId(tagid int) (*entities.Tag, error) {
 		TagID:   tag.TagID,
 		PartNO:  tag.PartNO,
 		PO:      tag.PO,
-		Quntity: tag.Quntity,
+		Quantity: tag.Quantity,
 	}
 	return &tagResponse, nil
 }
 
-func (s tagService) GetTagTableData() ([]entities.Tag, error) {
+func (s tagService) GetTagTableData() ([]entities.TagTableDataDataResponse, error) {
 	tags, err := s.tagRepo.GetAllTagTableData()
 	if err != nil {
 		log.Println(err)
 		return nil, err
 	}
 
-	tagResponses := []entities.Tag{}
+	tagResponses := []entities.TagTableDataDataResponse{}
 	for _, tag := range tags {
-		tagResponse := entities.Tag{
+		tagResponse := entities.TagTableDataDataResponse{
 			TagID:   tag.TagID,
 			PartNO:  tag.PartNO,
 			PO:      tag.PO,
-			Quntity: tag.Quntity,
+			Quantity: tag.Quantity,
 		}
 		tagResponses = append(tagResponses, tagResponse)
 	}
@@ -82,7 +82,7 @@ func (s tagService) PostAddTag(req dtos.AddTagRequest) (*entities.Tag, error) {
     tag := &entities.Tag{
         PartNO:  req.PartNO,
         PO:      req.PO,
-        Quntity: req.Quntity,
+        Quantity: req.Quantity,
     }
 
     err := s.tagRepo.PostAddTag(tag)

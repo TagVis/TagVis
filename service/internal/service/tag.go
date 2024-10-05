@@ -9,7 +9,7 @@ type TagService interface {
 	GetTags() ([]entities.Tag, error)
 	GetTagByTagId(int) (*entities.Tag, error)
 
-	GetTagTableData() ([]entities.Tag, error)
+	GetTagTableData() ([]entities.TagTableDataDataResponse, error)
 
 	PostAddTag(dtos.AddTagRequest) (*entities.Tag, error)
 

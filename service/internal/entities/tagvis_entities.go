@@ -1,16 +1,15 @@
 package entities
 
 type Tag struct {
-	TagID   *uint `gorm:"primaryKey;autoIncrement"`
-	PartNO  *string
-	PO      *string
-	Quntity *uint
+	TagID    *uint `gorm:"primaryKey;autoIncrement"`
+	PartNO   *string
+	PO       *string
+	Quantity *uint
 }
 
 type TagTableDataDataResponse struct {
 	TagID       *uint
 	PartNO      *string
 	PO          *string
-	Quntity     *uint
-	SumOfPartNO *uint
+	Quantity    *uint
 }
