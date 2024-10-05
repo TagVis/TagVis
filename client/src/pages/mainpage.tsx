@@ -1,6 +1,7 @@
 import { Navbar } from '@/components/navbar/navbar';
 import { Camera } from '@/components/mainpage/camera';
-import { TableData } from '@/components/mainpage/tabledata';
+import { DataTables } from '@/components/mainpage/datatables';
+import { DataInDataTables } from '@/components/mainpage/dataindatatables';
 
 export const MainPage = () => {
   return (
@@ -8,7 +9,8 @@ export const MainPage = () => {
       <Navbar />
       <div className="flex flex-1 flex-col">
         <Camera />
-        <TableData />
+        <DataTables />
+        <DataInDataTables />
       </div>
     </div>
   );

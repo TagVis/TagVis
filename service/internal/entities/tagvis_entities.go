@@ -7,7 +7,7 @@ type Tag struct {
 	Quantity *uint
 }
 
-type TagTableDataDataResponse struct {
+type TagDataTablesDataResponse struct {
 	TagID       *uint
 	PartNO      *string
 	PO          *string

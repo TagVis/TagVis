@@ -57,16 +57,16 @@ func (s tagService) GetTagByTagId(tagid int) (*entities.Tag, error) {
 	return &tagResponse, nil
 }
 
-func (s tagService) GetTagTableData() ([]entities.TagTableDataDataResponse, error) {
-	tags, err := s.tagRepo.GetAllTagTableData()
+func (s tagService) GetTagDataTables() ([]entities.TagDataTablesDataResponse, error) {
+	tags, err := s.tagRepo.GetAllTagDataTables()
 	if err != nil {
 		log.Println(err)
 		return nil, err
 	}
 
-	tagResponses := []entities.TagTableDataDataResponse{}
+	tagResponses := []entities.TagDataTablesDataResponse{}
 	for _, tag := range tags {
-		tagResponse := entities.TagTableDataDataResponse{
+		tagResponse := entities.TagDataTablesDataResponse{
 			TagID:   tag.TagID,
 			PartNO:  tag.PartNO,
 			PO:      tag.PO,

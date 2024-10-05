@@ -8,7 +8,7 @@ type TagRepository interface {
 	GetAllTag() ([]entities.Tag, error)
 	GetTagByTagId(int) (*entities.Tag, error)
 
-	GetAllTagTableData() ([]entities.Tag, error)
+	GetAllTagDataTables() ([]entities.Tag, error)
 
 	PostAddTag(item *entities.Tag) error
 

@@ -52,16 +52,16 @@ func (h *tagHandler) GetTagByTagId(c *fiber.Ctx) error {
 	return c.JSON(tagResponse)
 }
 
-func (h *tagHandler) GetTagTableData(c *fiber.Ctx) error {
-	tagsResponse := make([]dtos.TagTableDataDataResponse, 0)
+func (h *tagHandler) GetTagDataTables(c *fiber.Ctx) error {
+	tagsResponse := make([]dtos.TagDataTablesDataResponse, 0)
 
-	tags, err := h.tagSer.GetTagTableData()
+	tags, err := h.tagSer.GetTagDataTables()
 	if err != nil {
 		return err
 	}
 
 	for _, tag := range tags {
-		tagsResponse = append(tagsResponse, dtos.TagTableDataDataResponse{
+		tagsResponse = append(tagsResponse, dtos.TagDataTablesDataResponse{
 			TagID:   tag.TagID,
 			PartNO:  tag.PartNO,
 			PO:      tag.PO,

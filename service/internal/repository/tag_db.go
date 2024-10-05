@@ -32,7 +32,7 @@ func (r tagRepositoryDB) GetTagByTagId(itemid int) (*entities.Tag, error) {
 	return &tags, nil
 }
 
-func (r tagRepositoryDB) GetAllTagTableData() ([]entities.Tag, error) {
+func (r tagRepositoryDB) GetAllTagDataTables() ([]entities.Tag, error) {
 	tags := []entities.Tag{}
 	result := r.db.Model(&entities.Tag{}).
 		Select("tag_id, part_no, po, SUM(quantity) as quantity").

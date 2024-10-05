@@ -14,7 +14,7 @@ type TagDataByTagIdResponse struct {
 	Quantity *uint   `json:"quantity" validate:"required"`
 }
 
-type TagTableDataDataResponse struct {
+type TagDataTablesDataResponse struct {
 	TagID       *uint   `json:"tag_id" validate:"required"`
 	PartNO      *string `json:"part_no" validate:"required"`
 	PO          *string `json:"po" validate:"required"`
