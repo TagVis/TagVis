@@ -1,91 +1,88 @@
 package main
 
 import (
-	"fmt"
+    "fmt"
 
-	"log"
-	"needful/internal/entities"
-	"needful/internal/handler"
-	"needful/internal/repository"
-	"needful/internal/service"
-	"strings"
-	"time"
+    "log"
+    "tagvis/internal/entities"
+    "tagvis/internal/handler"
+    "tagvis/internal/repository"
+    "tagvis/internal/service"
+    "strings"
+    "time"
 
-	"github.com/gofiber/fiber/v2"
+    "github.com/gofiber/fiber/v2"
 
-	"github.com/spf13/viper"
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
+    "github.com/spf13/viper"
+    "gorm.io/driver/mysql"
+    "gorm.io/gorm"
 )
 
 func main() {
-	initTimeZone()
-	initConfig()
-	dsn := fmt.Sprintf("%v:%v@tcp(%v:%v)/%v?parseTime=true",
-		viper.GetString("db.username"),
-		viper.GetString("db.password"),
-		viper.GetString("db.host"),
-		viper.GetInt("db.port"),
-		viper.GetString("db.database"),
-	)
-	log.Println(dsn)
+    initTimeZone()
+    initConfig()
+    dsn := fmt.Sprintf("%v:%v@tcp(%v:%v)/%v?parseTime=true",
+        viper.GetString("db.username"),
+        viper.GetString("db.password"),
+        viper.GetString("db.host"),
+        viper.GetInt("db.port"),
+        viper.GetString("db.database"),
+    )
+    log.Println(dsn)
 
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+    db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 
-	if err != nil {
-		panic("Failed to connect database")
-	}
+    if err != nil {
+        panic("Failed to connect database")
+    }
 
-	err = db.AutoMigrate(&entities.Tag{})
-	if err != nil {
-		panic("Failed to AutoMigrate Tag")
-	}
+    err = db.AutoMigrate(&entities.Tag{})
+    if err != nil {
+        panic("Failed to AutoMigrate Tag")
+    }
 
-	tagRepositoryDB := repository.NewTagRepositoryDB(db)
+    tagRepositoryDB := repository.NewTagRepositoryDB(db)
 
-	tagService := service.NewUserService(tagRepositoryDB)
+    tagService := service.NewTagService(tagRepositoryDB)
 
-	tagHandler := handler.NewMessageHandler(tagService)
+    tagHandler := handler.NewTagHandler(tagService)
 
-	app := fiber.New()
+    app := fiber.New()
 
-	app.Use(func(c *fiber.Ctx) error {
-		return "idk"
-	})
+    //Endpoint ###########################################################################
 
-	//Endpoint ###########################################################################
+    app.Get("/GetTags", tagHandler.GetTags) // Endpoint for test
+    app.Get("/GetTagByTagId/:TagID", tagHandler.GetTagByTagId) // Endpoint for test
 
-	// Endpoint for test
-	app.Get("/GetUsers", userHandler.GetUsers)
-	app.Get("/GetUserByUserId/:UserID", userHandler.GetUserByUserId)
-	// Endpoint for project
-	app.Post("/Register", userHandler.Register)
+	app.Get("/GetTagTableData", tagHandler.GetTags) // Endpoint for project
+    app.Post("/PostAddTag", tagHandler.PostAddTag) // Endpoint for project
 
-	//#####################################################################################
+    //#####################################################################################
 
-	log.Printf("TagVis running at port:  %v", viper.GetInt("app.port"))
-	app.Listen(fmt.Sprintf(":%v", viper.GetInt("app.port")))
+    log.Printf("TagVis running at port:  %v", viper.GetInt("app.port"))
+    app.Listen(fmt.Sprintf(":%v", viper.GetInt("app.port")))
 
 }
 
 func initConfig() {
-	viper.SetConfigName("config")
-	viper.SetConfigType("yaml")
-	viper.AddConfigPath(".")
-	viper.AutomaticEnv()
-	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+    viper.SetConfigName("config")
+    viper.SetConfigType("yaml")
+    viper.AddConfigPath(".")
+    viper.AutomaticEnv()
+    viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 
-	err := viper.ReadInConfig()
-	if err != nil {
-		panic(err)
-	}
+    err := viper.ReadInConfig()
+    if err != nil {
+        panic(err)
+    }
 }
 
 func initTimeZone() {
-	ict, err := time.LoadLocation("Asia/Bangkok")
-	if err != nil {
-		panic(err)
-	}
+    ict, err := time.LoadLocation("Asia/Bangkok")
+    if err != nil {
+        panic(err)
+    }
 
-	time.Local = ict
+    time.Local = ict
 }
+
