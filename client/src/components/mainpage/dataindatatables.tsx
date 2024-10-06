@@ -1,4 +1,4 @@
-import useSWR from "swr";
+import useSWR, { mutate } from "swr";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
@@ -19,6 +19,24 @@ interface TagDataInDataTables {
 }
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
+
+// Function to delete a single tag by TagID
+const deleteTagByTagId = async (tag_id: number) => {
+  await fetch(`/api/DeleteTagByTagId/${tag_id}`, { method: "DELETE" });
+  // Revalidate data after deletion
+  mutate("/api/GetTags");
+  // Also revalidate the DataTables data
+  mutate("/api/GetTagDataTables");
+};
+
+// Function to delete all tags
+const deleteAllTags = async () => {
+  await fetch("/api/DeleteTags", { method: "DELETE" });
+  // Revalidate data after deleting all tags
+  mutate("/api/GetTags");
+  // Also revalidate the DataTables data
+  mutate("/api/GetTagDataTables");
+};
 
 export const DataInDataTables = () => {
   const { data, error } = useSWR<TagDataInDataTables[]>("/api/GetTags", fetcher);
@@ -52,6 +70,7 @@ export const DataInDataTables = () => {
                 <TableHead className="font-bold text-center">Part#</TableHead>
                 <TableHead className="font-bold text-center">P.O.</TableHead>
                 <TableHead className="font-bold text-center">Quantity</TableHead>
+                <TableHead className="font-bold text-center">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -87,7 +106,12 @@ export const DataInDataTables = () => {
                     )}
                   </TableCell>
                   <TableCell>
-                    <Button className="bg-red-500 hover:bg-red-900 text-white">Delete</Button>
+                    <Button
+                      className="bg-red-500 hover:bg-red-900 text-white"
+                      onClick={() => deleteTagByTagId(tag.tag_id)}
+                    >
+                      Delete
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))}
@@ -97,7 +121,12 @@ export const DataInDataTables = () => {
       </Card>
 
       <div className="flex justify-start w-full mt-4 mb-16">
-        <Button className="bg-red-600 hover:bg-red-900 text-white">⚠️ Delete All Data ⚠️</Button>
+        <Button
+          className="bg-red-600 hover:bg-red-900 text-white"
+          onClick={deleteAllTags}
+        >
+          ⚠️ Delete All Data ⚠️
+        </Button>
       </div>
     </div>
   );
