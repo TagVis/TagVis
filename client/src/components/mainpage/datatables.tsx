@@ -39,9 +39,8 @@ export const DataTables = () => {
     );
 
   const partSum = data.reduce<Record<string, number>>((acc, tag) => {
-    if (tag.part_no) {
-      acc[tag.part_no] = (acc[tag.part_no] || 0) + (tag.quantity || 0);
-    }
+    const partKey = tag.part_no || "N/A";
+    acc[partKey] = (acc[partKey] || 0) + (tag.quantity || 0);
     return acc;
   }, {});
 
@@ -86,13 +85,15 @@ export const DataTables = () => {
                     )}
                   </TableCell>
                   <TableCell>
-                    {tag.part_no && partSum[tag.part_no] !== undefined ? (
-                      partSum[tag.part_no]
-                    ) : (
-                      <span className="text-red-500 font-semibold">
-                        Missing Part#
-                      </span>
-                    )}
+                    <span
+                      className={
+                        tag.part_no === null
+                          ? "text-orange-500"
+                          : ""
+                      }
+                    >
+                      {partSum[tag.part_no || "N/A"]}
+                    </span>
                   </TableCell>
                 </TableRow>
               ))}
