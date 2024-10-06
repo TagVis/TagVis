@@ -33,18 +33,18 @@ func (r tagRepositoryDB) GetTagByTagId(tagid int) (*entities.Tag, error) {
 }
 
 func (r tagRepositoryDB) GetAllTagDataTables() ([]entities.Tag, error) {
-	tags := []entities.Tag{}
-	result := r.db.Model(&entities.Tag{}).
-		Select("tag_id, part_no, po, SUM(quantity) as quantity").
-		Group("po, part_no").
-		Having("po IS NOT NULL").
-		Order("part_no IS NULL, part_no ASC").
-		Find(&tags)
-
-	if result.Error != nil {
-		return nil, result.Error
-	}
-	return tags, nil
+	// *****************
+	// *****************
+	// *****************
+	// *****************
+	// *****************
+	// Lawrence homework
+	// *****************
+	// *****************
+	// *****************
+	// *****************
+	// *****************
+	return nil, nil
 }
 
 func (r tagRepositoryDB) PostAddTag(tag *entities.Tag) error {
