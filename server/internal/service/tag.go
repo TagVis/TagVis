@@ -13,4 +13,8 @@ type TagService interface {
 
 	PostAddTag(dtos.AddTagRequest) (*entities.Tag, error)
 
+	DeleteTagByTagId(tagID int) error
+
+	DeleteTags() error
+
 }

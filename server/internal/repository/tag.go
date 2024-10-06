@@ -10,6 +10,10 @@ type TagRepository interface {
 
 	GetAllTagDataTables() ([]entities.Tag, error)
 
-	PostAddTag(item *entities.Tag) error
+	PostAddTag(tag *entities.Tag) error
+
+	DeleteTagByTagId(tagID int) error
+
+	DeleteAllTag() error
 
 }

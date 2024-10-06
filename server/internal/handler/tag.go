@@ -1,10 +1,12 @@
 package handler
 
 import (
-	"github.com/gofiber/fiber/v2"
+	"strconv"
+	"strings"
 	"tagvis/internal/dtos"
 	"tagvis/internal/service"
-	"strconv"
+
+	"github.com/gofiber/fiber/v2"
 )
 
 type tagHandler struct {
@@ -92,3 +94,27 @@ func (h *tagHandler) PostAddTag(c *fiber.Ctx) error {
 	return c.JSON(tagResponse)
 }
 
+func (h *tagHandler) DeleteTagByTagId(c *fiber.Ctx) error {
+	tagIDReceive, err := strconv.Atoi(c.Params("TagID"))
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid tagID"})
+	}
+
+	err = h.tagSer.DeleteTagByTagId(tagIDReceive)
+	if err != nil {
+		if strings.Contains(err.Error(), "tag not found") {
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"message": "tag not found"})
+		}
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": err.Error()}) //failed to delete tag
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"message": "tag deleted successfully"})
+}
+
+func (h *tagHandler) DeleteTags(c *fiber.Ctx) error {
+    err := h.tagSer.DeleteTags()
+    if err != nil {
+        return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": err.Error()})
+    }
+    return c.Status(fiber.StatusOK).JSON(fiber.Map{"message": "all tags deleted successfully"})
+}

@@ -2,6 +2,7 @@ package service
 
 import (
 	"log"
+	"strings"
 	"tagvis/internal/dtos"
 	"tagvis/internal/entities"
 	"tagvis/internal/repository"
@@ -92,4 +93,29 @@ func (s tagService) PostAddTag(req dtos.AddTagRequest) (*entities.Tag, error) {
     }
 
     return tag, nil
+}
+
+func (s tagService) DeleteTagByTagId(tagID int) error {
+	_, err := s.GetTagByTagId(tagID)
+	if err != nil {
+		if strings.Contains(err.Error(), "tag doesn't exist") {
+			return fiber.NewError(fiber.StatusNotFound, "tag not found")
+		}
+		return err
+	}
+
+	err = s.tagRepo.DeleteTagByTagId(tagID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s tagService) DeleteTags() error {
+    err := s.tagRepo.DeleteAllTag()
+    if err != nil {
+        return err
+    }
+    return nil
 }

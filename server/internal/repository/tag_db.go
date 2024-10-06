@@ -23,9 +23,9 @@ func (r tagRepositoryDB) GetAllTag() ([]entities.Tag, error) {
 	return tags, nil
 }
 
-func (r tagRepositoryDB) GetTagByTagId(itemid int) (*entities.Tag, error) {
+func (r tagRepositoryDB) GetTagByTagId(tagid int) (*entities.Tag, error) {
 	tags := entities.Tag{}
-	result := r.db.Where("tag_id = ?", itemid).Find(&tags)
+	result := r.db.Where("tag_id = ?",tagid).Find(&tags)
 	if result.Error != nil {
 		return nil, result.Error
 	}
@@ -53,4 +53,21 @@ func (r tagRepositoryDB) PostAddTag(tag *entities.Tag) error {
 		return result.Error
 	}
 	return nil
+}
+
+func (r tagRepositoryDB) DeleteTagByTagId(tagid int) error {
+	tags := entities.Tag{}
+	result := r.db.Where("tag_id = ?", tagid).Unscoped().Delete(&tags)
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
+
+func (r tagRepositoryDB) DeleteAllTag() error {
+    result := r.db.Unscoped().Where("1 = 1").Delete(&entities.Tag{})
+    if result.Error != nil {
+        return result.Error
+    }
+    return nil
 }

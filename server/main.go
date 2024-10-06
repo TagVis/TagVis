@@ -51,11 +51,16 @@ func main() {
 
     //Endpoint ###########################################################################
 
-    app.Get("/GetTags", tagHandler.GetTags) // Endpoint for test
-    app.Get("/GetTagByTagId/:TagID", tagHandler.GetTagByTagId) // Endpoint for test
+    app.Get("/GetTags", tagHandler.GetTags)
+    app.Get("/GetTagByTagId/:TagID", tagHandler.GetTagByTagId)
 
-	app.Get("/GetTagDataTables", tagHandler.GetTagDataTables) // Endpoint for project
-    app.Post("/PostAddTag", tagHandler.PostAddTag) // Endpoint for project
+	app.Get("/GetTagDataTables", tagHandler.GetTagDataTables)
+
+    app.Post("/PostAddTag", tagHandler.PostAddTag)
+
+    app.Delete("/DeleteTagByTagId/:TagID", tagHandler.DeleteTagByTagId)
+
+    app.Delete("/DeleteTags", tagHandler.DeleteTags)
 
     //#####################################################################################
 
