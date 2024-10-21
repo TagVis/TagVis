@@ -5,9 +5,13 @@ export const Camera = () => {
     <div className="flex flex-col items-center p-4 space-y-8">
       <Card className="">
         <CardContent>
-            <div>
-            <p className="text-2xl font-bold">Camera</p>
-            </div>
+          <div>
+            <img 
+              src="https://www.shutterstock.com/image-vector/camera-viewfinder-interface-recording-screen-600nw-1779361169.jpg" 
+              alt="Camera Viewfinder" 
+              className="w-full h-auto"
+            />
+          </div>
         </CardContent>
       </Card>
     </div>
