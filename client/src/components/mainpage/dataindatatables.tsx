@@ -61,12 +61,12 @@ export const DataInDataTables = () => {
       </div>
       
       <Card className="w-full">
-        <CardContent className="flex flex-col">
+        <CardContent className="flex flex-col items-center justify-center">
           <Table className="text-center">
             <TableHeader>
               <TableRow>
                 <TableHead className="font-bold text-center">#</TableHead>
-                <TableHead className="font-bold text-center">TagID</TableHead>
+                {/* <TableHead className="font-bold text-center">TagID</TableHead> */}
                 <TableHead className="font-bold text-center">Part#</TableHead>
                 <TableHead className="font-bold text-center">P.O.</TableHead>
                 <TableHead className="font-bold text-center">Quantity</TableHead>
@@ -77,13 +77,13 @@ export const DataInDataTables = () => {
               {data.map((tag, index) => (
                 <TableRow key={tag.tag_id}>
                   <TableCell className="font-bold">{index + 1}</TableCell>
-                  <TableCell>
+                  {/* <TableCell>
                     {tag.tag_id ? (
                       tag.tag_id
                     ) : (
                       <span className="text-red-500 font-semibold">N/A</span>
                     )}
-                  </TableCell>
+                  </TableCell> */}
                   <TableCell>
                     {tag.part_no ? (
                       tag.part_no
