@@ -1,15 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import Tesseract from "tesseract.js";
 import CameraLogo from "../../assets/Camera.png";
 
 export const Camera = () => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  
-  const poCanvasRef = useRef<HTMLCanvasElement | null>(null);
-  const partCanvasRef = useRef<HTMLCanvasElement | null>(null);
-  const qtyCanvasRef = useRef<HTMLCanvasElement | null>(null);
-
   const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
   const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(null);
 
@@ -19,11 +13,13 @@ export const Camera = () => {
     width: number;
     height: number;
     label: string;
-    text?: string; 
+    confidence: number;
+    text: string; // OCR text from backend
   }
 
   const [detections, setDetections] = useState<Detection[]>([]);
 
+  // Fetch available cameras
   useEffect(() => {
     const getDevices = async () => {
       const mediaDevices = await navigator.mediaDevices.enumerateDevices();
@@ -36,6 +32,7 @@ export const Camera = () => {
     getDevices();
   }, []);
 
+  // Start video stream
   useEffect(() => {
     const startVideo = async () => {
       if (selectedDeviceId && videoRef.current) {
@@ -51,6 +48,7 @@ export const Camera = () => {
     };
     startVideo();
 
+    // Clean up on component unmount
     return () => {
       if (videoRef.current && videoRef.current.srcObject) {
         const tracks = (videoRef.current.srcObject as MediaStream).getTracks();
@@ -59,7 +57,7 @@ export const Camera = () => {
     };
   }, [selectedDeviceId]);
 
-
+  // Function to capture a frame and send to backend for detection and OCR
   const captureAndDetect = async () => {
     if (canvasRef.current && videoRef.current) {
       const context = canvasRef.current.getContext("2d");
@@ -67,7 +65,7 @@ export const Camera = () => {
         context.drawImage(videoRef.current, 0, 0, canvasRef.current.width, canvasRef.current.height);
       }
 
-
+      // Convert the canvas to a Blob to send to the backend
       const blob = await new Promise((resolve, reject) => {
         if (canvasRef.current) {
           canvasRef.current.toBlob(resolve, "image/jpeg");
@@ -78,7 +76,7 @@ export const Camera = () => {
       const formData = new FormData();
       formData.append("file", blob as Blob, "frame.jpg");
 
-
+      // Send frame to backend for detection and OCR
       const response = await fetch("http://127.0.0.1:8000/detect/", {
         method: "POST",
         body: formData,
@@ -86,48 +84,9 @@ export const Camera = () => {
       const detectionData = await response.json();
       console.log("Detection data received:", detectionData);
 
-      
-      const updatedDetections = await Promise.all(
-        detectionData.map(async (det: Detection) => {
-          if (["PO no", "part no", "qty"].includes(det.label)) {
-            const rawText = await performOCR(det); 
-            console.log(`OCR result for ${det.label}:`, rawText);
-            return { ...det, text: rawText };
-          }
-          return det;
-        })
-      );
-      setDetections(updatedDetections);
+      // Update state with received detection data
+      setDetections(detectionData);
     }
-  };
-
-  const performOCR = async (detection: Detection) => {
-    if (canvasRef.current) {
-      const context = canvasRef.current.getContext("2d");
-      let tempCanvas;
-
-      if (detection.label === "PO no" && poCanvasRef.current) {
-        tempCanvas = poCanvasRef.current;
-      } else if (detection.label === "part no" && partCanvasRef.current) {
-        tempCanvas = partCanvasRef.current;
-      } else if (detection.label === "qty" && qtyCanvasRef.current) {
-        tempCanvas = qtyCanvasRef.current;
-      }
-
-      if (context && tempCanvas) {
-        const tempContext = tempCanvas.getContext("2d");
-        const { x, y, width, height } = detection;
-
-        const imageData = context.getImageData(x, y, width, height);
-        tempCanvas.width = width;
-        tempCanvas.height = height;
-        tempContext?.putImageData(imageData, 0, 0); 
-
-        const { data: { text } } = await Tesseract.recognize(tempCanvas, "eng");
-        return text;
-      }
-    }
-    return "";
   };
 
   const handleDeviceChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -145,28 +104,36 @@ export const Camera = () => {
         ))}
       </select>
 
-
+      {/* Video feed */}
       <div className="relative w-full h-auto">
         <video ref={videoRef} autoPlay playsInline muted className="w-full h-auto rounded shadow-md" />
 
+        {/* Canvas for capturing frames */}
         <canvas ref={canvasRef} width={640} height={480} style={{ display: "none" }} />
+
+        {/* Display bounding boxes and OCR text based on detections */}
+        {detections.map((det, index) => (
+          <div
+            key={index}
+            style={{
+              position: "absolute",
+              border: "2px solid cyan",
+              left: `${det.x}px`,
+              top: `${det.y}px`,
+              width: `${det.width}px`,
+              height: `${det.height}px`,
+              color: "cyan",
+              pointerEvents: "none",
+            }}
+          >
+            <span style={{ backgroundColor: "cyan", color: "black", padding: "2px 4px", fontSize: "12px" }}>
+              {det.label}: {det.text} {/* Display OCR result from backend */}
+            </span>
+          </div>
+        ))}
       </div>
 
-      <div className="mt-4 flex space-x-4">
-        <div>
-          <canvas ref={poCanvasRef} className="border border-gray-300 rounded shadow-md" />
-          <p className="text-sm text-gray-500 text-center">PO No Region</p>
-        </div>
-        <div>
-          <canvas ref={partCanvasRef} className="border border-gray-300 rounded shadow-md" />
-          <p className="text-sm text-gray-500 text-center">Part No Region</p>
-        </div>
-        <div>
-          <canvas ref={qtyCanvasRef} className="border border-gray-300 rounded shadow-md" />
-          <p className="text-sm text-gray-500 text-center">Qty Region</p>
-        </div>
-      </div>
-
+      {/* Capture button */}
       <button
         onClick={captureAndDetect}
         className="mt-4 w-16 h-16 rounded-full bg-blue-500 flex items-center justify-center shadow-md"
