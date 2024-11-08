@@ -25,7 +25,7 @@ app.add_middleware(
 
 model = YOLO('models/best.pt')
 
-ocr = PaddleOCR(use_angle_cls=True, lang='en', det_db_box_thresh=0.6, rec_algorithm="CRNN")  
+ocr = PaddleOCR(use_angle_cls=True, lang='en', det_db_box_thresh=0.6, rec_algorithm="CRNN")
 
 def preprocess_image(image):
     # Convert to grayscale
@@ -33,24 +33,56 @@ def preprocess_image(image):
 
     # Increase contrast and brightness
     enhancer = ImageEnhance.Contrast(image)
-    image = enhancer.enhance(2.0)
+    image = enhancer.enhance(2.5)  
     enhancer = ImageEnhance.Brightness(image)
     image = enhancer.enhance(1.3)
+
+    # Resize for better OCR accuracy
+    width, height = image.size
+    image = image.resize((int(width * 2), int(height * 2)), Image.Resampling.LANCZOS)
 
     # Convert to numpy array for OpenCV processing
     image_np = np.array(image)
 
-    # Apply Gaussian Blur to reduce noise
+    # Apply Gaussian Blur
     image_np = cv2.GaussianBlur(image_np, (3, 3), 0)
 
-    # Adaptive thresholding to convert to black and white
+    # Adaptive thresholding for black and white
     _, binary_image = cv2.threshold(image_np, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
 
-    # Apply edge enhancement for clearer text edges
-    kernel = np.array([[0, -1, 0], [-1, 5, -1], [0, -1, 0]])
-    enhanced_image = cv2.filter2D(binary_image, -1, kernel)
+    # Deskew the image
+    deskewed_image = deskew_image(binary_image)
 
-    return Image.fromarray(enhanced_image)
+    return Image.fromarray(deskewed_image)
+
+
+def deskew_image(image_np):
+    # Detect edges
+    edges = cv2.Canny(image_np, 50, 150, apertureSize=3)
+    # Use Hough Line Transform to detect lines
+    lines = cv2.HoughLines(edges, 1, np.pi / 180, 200)
+    
+    if lines is not None:
+        # Calculate the average angle of the detected lines
+        angles = []
+        for rho, theta in lines[:, 0]:
+            angle = (theta - np.pi / 2) * (180 / np.pi)  # Convert radian to degree
+            angles.append(angle)
+
+        # Calculate the median angle to reduce the impact of outliers
+        median_angle = np.median(angles)
+
+        # Rotate image to correct skew
+        (h, w) = image_np.shape[:2]
+        center = (w // 2, h // 2)
+        rotation_matrix = cv2.getRotationMatrix2D(center, median_angle, 1.0)
+        deskewed_image = cv2.warpAffine(image_np, rotation_matrix, (w, h), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_REPLICATE)
+
+        return deskewed_image
+    else:
+        # No lines found, return original image
+        return image_np
+
 
 def perform_ocr(image):
     # Preprocess the image
@@ -62,12 +94,15 @@ def perform_ocr(image):
     # Run OCR on the processed image
     ocr_result = ocr.ocr(image_np, cls=True)
 
-    # Extract text from OCR results
+    # Extract text from OCR results with better handling of spaces
+    text_lines = []
     if ocr_result and ocr_result[0]:
-        text = " ".join([line[1][0] for line in ocr_result[0] if line[1][0]])
-        return text
-    else:
-        return ""  # Return empty if no text is detected
+        for line in ocr_result[0]:
+            detected_text = line[1][0]
+            if detected_text:
+                text_lines.append(detected_text)
+
+    return " ".join(text_lines)
 
 @app.post("/detect/")
 async def detect(file: UploadFile = File(...)):

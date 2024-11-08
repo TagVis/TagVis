@@ -109,7 +109,7 @@ export const Camera = () => {
     switch (label) {
       case "qty":
         // Find the first word that is entirely numeric for quantity
-        const qty = words.find(word => /^\d+$/.test(word));
+        const qty = words.find(word => /^\d{1,3}$/.test(word));
         return qty || "";
         
       case "PO no":
