@@ -51,6 +51,13 @@ func main() {
 
     //Endpoint ###########################################################################
 
+    app.Get("/", func(c *fiber.Ctx) error {
+        return c.JSON(fiber.Map{
+            "status":  "success",
+            "message": "Backend is working, Nei test it",
+        })
+    })
+
     app.Get("/GetTags", tagHandler.GetTags)
     app.Get("/GetTagByTagId/:TagID", tagHandler.GetTagByTagId)
 
