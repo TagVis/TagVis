@@ -2,14 +2,14 @@ from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from ultralytics import YOLO
-from PIL import Image
+from PIL import Image, ImageEnhance, ImageOps
 import io
 import numpy as np
+import cv2
 from paddleocr import PaddleOCR
 
 app = FastAPI()
 
-# Allowed origins for CORS
 origins = [
     "http://localhost:6340",
     "http://127.0.0.1:6340"
@@ -23,27 +23,51 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Load YOLO model
 model = YOLO('models/best.pt')
 
-# Initialize PaddleOCR model
-ocr = PaddleOCR(use_angle_cls=True, lang='en')  # Adjust language as needed
+ocr = PaddleOCR(use_angle_cls=True, lang='en', det_db_box_thresh=0.6, rec_algorithm="CRNN")  
 
-# Function to perform OCR on a cropped image region
-def perform_ocr(image):
-    # Convert the PIL image to a numpy array
+def preprocess_image(image):
+    # Convert to grayscale
+    image = ImageOps.grayscale(image)
+
+    # Increase contrast and brightness
+    enhancer = ImageEnhance.Contrast(image)
+    image = enhancer.enhance(2.0)
+    enhancer = ImageEnhance.Brightness(image)
+    image = enhancer.enhance(1.3)
+
+    # Convert to numpy array for OpenCV processing
     image_np = np.array(image)
-    
-    # Run OCR on the image
+
+    # Apply Gaussian Blur to reduce noise
+    image_np = cv2.GaussianBlur(image_np, (3, 3), 0)
+
+    # Adaptive thresholding to convert to black and white
+    _, binary_image = cv2.threshold(image_np, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+
+    # Apply edge enhancement for clearer text edges
+    kernel = np.array([[0, -1, 0], [-1, 5, -1], [0, -1, 0]])
+    enhanced_image = cv2.filter2D(binary_image, -1, kernel)
+
+    return Image.fromarray(enhanced_image)
+
+def perform_ocr(image):
+    # Preprocess the image
+    preprocessed_image = preprocess_image(image)
+
+    # Convert to numpy array for PaddleOCR
+    image_np = np.array(preprocessed_image)
+
+    # Run OCR on the processed image
     ocr_result = ocr.ocr(image_np, cls=True)
-    
-    # Check if OCR detected any text
-    if ocr_result and ocr_result[0]:  # Ensure we have valid data
-        # Extract text from OCR results
+
+    # Extract text from OCR results
+    if ocr_result and ocr_result[0]:
         text = " ".join([line[1][0] for line in ocr_result[0] if line[1][0]])
         return text
     else:
-        return ""  # Return empty string if no text is detected
+        return ""  # Return empty if no text is detected
 
 @app.post("/detect/")
 async def detect(file: UploadFile = File(...)):
@@ -70,7 +94,7 @@ async def detect(file: UploadFile = File(...)):
 
             # Crop the detected region for OCR
             cropped_image = image.crop((bbox[0], bbox[1], bbox[2], bbox[3]))
-            
+
             # Perform OCR on the cropped region
             text = perform_ocr(cropped_image).strip()
 
@@ -85,5 +109,4 @@ async def detect(file: UploadFile = File(...)):
                 "text": text  # OCR result
             })
 
-    # Return detections with OCR data
     return JSONResponse(content=detection_data)
