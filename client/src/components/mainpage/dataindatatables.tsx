@@ -11,35 +11,36 @@ import {
 import { LoadingSpinner } from "../loadingspinner/loadingspinner";
 import { Button } from "@/components/ui/button";
 
-interface TagDataInDataTables {
+interface   TagDataInDataTables {
   tag_id: number;
   part_no: string | null;
   po: string | null;
   quantity: number | null;
 }
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
+const fetcher = (url: string) => fetch(url, { cache: "no-store" }).then((res) => res.json());
+
 
 // Function to delete a single tag by TagID
 const deleteTagByTagId = async (tag_id: number) => {
-  await fetch(`/api/DeleteTagByTagId/${tag_id}`, { method: "DELETE" });
+  await fetch(`http://localhost:8340/DeleteTagByTagId/${tag_id}`, { method: "DELETE" });
   // Revalidate data after deletion
-  mutate("/api/GetTags");
+  mutate("http://localhost:8340/GetTags");
   // Also revalidate the DataTables data
-  mutate("/api/GetTagDataTables");
+  mutate("http://localhost:8340/GetTagDataTables");
 };
 
 // Function to delete all tags
 const deleteAllTags = async () => {
-  await fetch("/api/DeleteTags", { method: "DELETE" });
+  await fetch("http://localhost:8340/DeleteTags", { method: "DELETE" });
   // Revalidate data after deleting all tags
-  mutate("/api/GetTags");
+  mutate("http://localhost:8340/GetTags");
   // Also revalidate the DataTables data
-  mutate("/api/GetTagDataTables");
+  mutate("http://localhost:8340/GetTagDataTables");
 };
 
 export const DataInDataTables = () => {
-  const { data, error } = useSWR<TagDataInDataTables[]>("/api/GetTags", fetcher);
+  const { data, error } = useSWR<TagDataInDataTables[]>("http://localhost:8340/GetTags", fetcher);
 
   if (error)
     return (

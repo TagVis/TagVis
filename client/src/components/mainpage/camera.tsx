@@ -94,31 +94,27 @@ export const Camera = () => {
 
       const filteredData = detectionData.map((det: Detection) => ({
         ...det,
-        text: applyTextFilter(det.text, det.label) // Apply filtering
+        text: applyTextFilter(det.text, det.label)
       }));
 
       setDetections(filteredData);
-      validateDetections(filteredData);
+      validateAndSendDetections(filteredData);
     }
   };
 
-  // Function to filter the text based on the label
   const applyTextFilter = (text: string, label: string): string => {
-    const words = text.toUpperCase().split(/\s+/) // Split text into words by whitespace
-  
+    const words = text.replace(/[.\s]/g, "_").split("_");
+
     switch (label) {
       case "qty":
-        // Find the first word that is entirely numeric for quantity
         const qty = words.find(word => /^\d{1,3}$/.test(word));
         return qty || "";
         
       case "PO no":
-        // Find the first word that is a 5-digit sequence for PO no
         const poNo = words.find(word => /^\d{5}$/.test(word));
         return poNo || "";
         
       case "part no":
-        // Find the first word that is exactly 3 uppercase letters for part no
         const partNo = words.find(word => /^[A-Z]{3}$/.test(word));
         return partNo || "";
         
@@ -127,7 +123,7 @@ export const Camera = () => {
     }
   };
 
-  const validateDetections = (detectionData: Detection[]) => {
+  const validateAndSendDetections = async (detectionData: Detection[]) => {
     const requiredParts = ["PO no", "part no", "qty"];
     const filteredDetections = detectionData.filter((det) => requiredParts.includes(det.label));
     const allPartsDetected = filteredDetections.length === requiredParts.length;
@@ -137,14 +133,48 @@ export const Camera = () => {
       setModalMessage("All parts detected successfully!");
       setIsModalSuccess(true);
       setModalData(filteredDetections);
+      
+      const tagData = {
+        PartNO: filteredDetections.find(det => det.label === "part no")?.text || "",
+        PO: filteredDetections.find(det => det.label === "PO no")?.text || "",
+        Quantity: filteredDetections.find(det => det.label === "qty")?.text || "",
+      };
+
+      await postAddTag(tagData);
     } else {
       setModalMessage("Detection failed. Ensure all required parts are present and have text.");
       setIsModalSuccess(false);
       setModalData(null);
     }
 
-    setTimeout(closeModal, 3000); // Automatically close modal after 3 seconds
+    setTimeout(closeModal, 3000); 
   };
+
+const postAddTag = async (tagData: { PartNO: string; PO: string; Quantity: string }) => {
+  try {
+    const parsedTagData = {
+      part_no: tagData.PartNO,
+      po: tagData.PO,
+      quantity: parseInt(tagData.Quantity, 10), // Convert Quantity to a number
+    };
+
+    const response = await fetch("http://localhost:8340/PostAddTag", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(parsedTagData),
+    });
+
+    if (!response.ok) throw new Error("Failed to add tag");
+
+    const responseData = await response.json();
+    console.log("Tag added successfully:", responseData);
+  } catch (error) {
+    console.error("Error adding tag:", error);
+    setModalMessage("Error adding tag to backend");
+    setIsModalSuccess(false);
+  }
+};
+
 
   const handleDeviceChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedDeviceId(event.target.value);
@@ -189,8 +219,6 @@ export const Camera = () => {
       {/* Video feed */}
       <div className="relative w-full h-auto">
         <video ref={videoRef} autoPlay playsInline muted className="w-full h-auto rounded shadow-md" />
-
-        {/* Canvas for capturing frames */}
         <canvas ref={canvasRef} width={640} height={480} style={{ display: "none" }} />
       </div>
 
