@@ -17,11 +17,11 @@ interface TagDataTables {
   quantity: number | null;
 }
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
+const fetcher = (url: string) => fetch(url, { cache: "no-store" }).then((res) => res.json());
 
 export const DataTables = () => {
   const { data, error } = useSWR<TagDataTables[]>(
-    "/api/GetTagDataTables",
+    "http://localhost:8340/GetTagDataTables",
     fetcher
   );
 
