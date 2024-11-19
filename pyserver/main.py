@@ -12,7 +12,6 @@ import concurrent.futures
 
 app = FastAPI()
 
-# Set up CORS for localhost access
 origins = [
     "http://localhost:6340",
     "http://127.0.0.1:6340"
@@ -26,7 +25,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Load models once on startup
 model = YOLO('models/best.pt')
 ocr = PaddleOCR(use_angle_cls=True, lang='en', det_db_box_thresh=0.6, rec_algorithm="CRNN")
 
@@ -67,17 +65,14 @@ def preprocess_image(image, fast_mode=False):
 @app.post("/detect/")
 async def detect(file: UploadFile = File(...)):
     try:
-        # Read image bytes from upload
         image_bytes = await file.read()
         image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
     except Exception as e:
         print("Error:", e)
         raise HTTPException(status_code=400, detail="Invalid image file")
 
-    # Perform detection
     results = model(image)
 
-    # Use concurrent processing for OCR and preprocessing
     detection_data = []
     with concurrent.futures.ThreadPoolExecutor() as executor:
         futures = []
@@ -88,15 +83,12 @@ async def detect(file: UploadFile = File(...)):
                 class_id = int(box.cls.cpu().numpy())
                 label = model.names[class_id]
 
-                # Crop image region for OCR
                 cropped_image = image.crop((bbox[0], bbox[1], bbox[2], bbox[3]))
 
-                # Submit OCR processing for concurrent execution
                 futures.append(
                     executor.submit(process_and_ocr, cropped_image, label, confidence, bbox)
                 )
 
-        # Gather all processed OCR results
         for future in concurrent.futures.as_completed(futures):
             detection_data.append(future.result())
 
@@ -121,7 +113,6 @@ def perform_ocr(image):
     image_np = np.array(preprocessed_image)
     ocr_result = ocr.ocr(image_np, cls=True)
 
-    # Extract text from OCR result
     text_lines = []
     if ocr_result and ocr_result[0]:
         for line in ocr_result[0]:
